@@ -283,11 +283,11 @@ class CloudRequestEngine extends Engine
     }
 
     /**
-     * Internal method to get properties for cloud engines from the cloud service.
+     * Get properties for cloud engines from the cloud service.
      *
      * @return array<string, string|array<string, array<string, bool|string>>>
      */
-    private function getEngineProperties(): array
+    public function getEngineProperties(): array
     {
         // Get properties for all engines
 
@@ -312,6 +312,8 @@ class CloudRequestEngine extends Engine
                 $flowElementProperties[$dataKey][strtolower($meta['name'])] = $meta;
             }
         }
+
+        $this->flowElementProperties = $flowElementProperties;
 
         return $flowElementProperties;
     }
