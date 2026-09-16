@@ -46,6 +46,11 @@ class Constants
     // Error message when non-success status is returned.
     public const MESSAGE_ERROR_CODE_RETURNED = "Cloud service at '%s' returned status code '%s' with content %s";
 
+    // Message when the request never reached the cloud service, for
+    // example where the name does not resolve, the connection is refused,
+    // the certificate cannot be checked or the request times out.
+    public const MESSAGE_REQUEST_FAILED = "The request to the cloud service at '%s' could not be made: %s";
+
     // Evidence key seperator
     public const EVIDENCE_SEPERATOR = '.';
 
