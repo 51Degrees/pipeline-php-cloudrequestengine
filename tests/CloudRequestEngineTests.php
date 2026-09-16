@@ -341,6 +341,37 @@ class CloudRequestEngineTests extends CloudRequestEngineTestsBase
     }
 
     /**
+     * The name sent to the cloud service is everything after the first dot,
+     * as the .NET engine sends it. Several evidence names have a dot of
+     * their own, among them 'query.id.usage', which a 51Did depends on, and
+     * cutting at the last dot sent it as 'usage', which the cloud service
+     * does not read.
+     */
+    public function testGetContent_keyKeepsEverythingAfterThePrefix()
+    {
+        $engine = new CloudRequestEngine([
+            'resourceKey' => CloudRequestEngineTests::resourceKey,
+            'httpClient' => $this->mockHttp()
+        ]);
+
+        $data = (new PipelineBuilder())->add($engine)->build()->createFlowData();
+        $data->evidence->set('query.id.usage', 'personalized');
+        $data->evidence->set('query.robotstxt.train', 'no');
+        $data->evidence->set('header.user-agent', 'iPhone');
+
+        $result = $engine->getContent($data);
+
+        $this->assertSame(
+            [
+                'user-agent' => 'iPhone',
+                'id.usage' => 'personalized',
+                'robotstxt.train' => 'no'
+            ],
+            $result
+        );
+    }
+
+    /**
      * @after
      */
     protected function tearDowniCloudEndPoint()
