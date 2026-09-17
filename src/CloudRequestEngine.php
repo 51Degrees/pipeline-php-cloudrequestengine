@@ -179,6 +179,9 @@ class CloudRequestEngine extends Engine
             // 'query.id.usage', which is sent as 'id.usage'.
             $evidenceKeyParts = explode(Constants::EVIDENCE_SEPERATOR, $evidenceKey, 2);
             $prefix = strtolower($evidenceKeyParts[0]);
+            // end() rather than [1], because a key with no dot at all
+            // splits into one part and that part is both the prefix and
+            // the name, which is what the .NET engine does with it too.
             $suffix = strtolower(end($evidenceKeyParts));
 
             // Check and add the evidence to the query parameters.

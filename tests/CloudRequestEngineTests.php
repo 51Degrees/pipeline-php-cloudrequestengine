@@ -372,6 +372,69 @@ class CloudRequestEngineTests extends CloudRequestEngineTestsBase
     }
 
     /**
+     * The header route to a 51Did is cut in the same place. The cloud
+     * service lists 'header.id.usage', 'header.id.email' and
+     * 'header.id.salt' alongside the query forms, and each was sent under
+     * the name after its last dot before this change.
+     */
+    public function testGetContent_headerKeyKeepsEverythingAfterThePrefix()
+    {
+        $engine = new CloudRequestEngine([
+            'resourceKey' => CloudRequestEngineTests::resourceKey,
+            'httpClient' => $this->mockHttp()
+        ]);
+
+        $data = (new PipelineBuilder())->add($engine)->build()->createFlowData();
+        $data->evidence->set('header.id.usage', 'personalized');
+
+        $result = $engine->getContent($data);
+
+        $this->assertSame(['id.usage' => 'personalized'], $result);
+    }
+
+    /**
+     * A prefix the engine does not group, such as the 'derived.id.usage'
+     * the cloud service lists, reaches addQueryData through the 'other'
+     * branch of getSelectedEvidence rather than one of the three prefix
+     * branches, and is cut in the same place.
+     */
+    public function testGetContent_otherPrefixKeyKeepsEverythingAfterThePrefix()
+    {
+        $engine = new CloudRequestEngine([
+            'resourceKey' => CloudRequestEngineTests::resourceKey,
+            'httpClient' => $this->mockHttp()
+        ]);
+
+        $data = (new PipelineBuilder())->add($engine)->build()->createFlowData();
+        $data->evidence->set('derived.id.usage', 'personalized');
+
+        $result = $engine->getContent($data);
+
+        $this->assertSame(['id.usage' => 'personalized'], $result);
+    }
+
+    /**
+     * A key with no dot at all has no prefix to remove, so the whole key is
+     * the name sent. Limiting the split to two parts leaves one part for
+     * such a key, and end() returns it; reading part one instead would send
+     * every unprefixed evidence name empty.
+     */
+    public function testGetContent_keyWithNoSeparatorIsSentWhole()
+    {
+        $engine = new CloudRequestEngine([
+            'resourceKey' => CloudRequestEngineTests::resourceKey,
+            'httpClient' => $this->mockHttp()
+        ]);
+
+        $data = (new PipelineBuilder())->add($engine)->build()->createFlowData();
+        $data->evidence->set('51D_ProfileIds', '12345');
+
+        $result = $engine->getContent($data);
+
+        $this->assertSame(['51d_profileids' => '12345'], $result);
+    }
+
+    /**
      * @after
      */
     protected function tearDowniCloudEndPoint()
