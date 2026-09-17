@@ -58,9 +58,11 @@ class HttpClient
 
             if ($data === false) {
                 // The request never reached the service, so there is no
-                // status and no body to read. Without this the failure is
-                // reported as no data in the response, which points at the
-                // service rather than at the connection.
+                // status and no body to read. Without this, false went on
+                // to validateResponse(), where the strict types this file
+                // declares turned it into a type error naming that method,
+                // and $http_response_header was never set either, so the
+                // caller heard nothing about the connection.
                 $error = error_get_last();
 
                 throw new CloudRequestException(sprintf(
