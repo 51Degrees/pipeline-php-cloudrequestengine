@@ -174,9 +174,14 @@ class CloudRequestEngine extends Engine
     public function addQueryData(array $queryData, array $allEvidence, array $evidence): array
     {
         foreach ($evidence as $evidenceKey => $evidenceValue) {
-            // Get the key parts
-            $evidenceKeyParts = explode(Constants::EVIDENCE_SEPERATOR, $evidenceKey);
+            // Split at the first dot only, as the .NET engine does, because
+            // some evidence names have dots of their own, for example
+            // 'query.id.usage', which is sent as 'id.usage'.
+            $evidenceKeyParts = explode(Constants::EVIDENCE_SEPERATOR, $evidenceKey, 2);
             $prefix = strtolower($evidenceKeyParts[0]);
+            // end() rather than [1], because a key with no dot at all
+            // splits into one part and that part is both the prefix and
+            // the name, which is what the .NET engine does with it too.
             $suffix = strtolower(end($evidenceKeyParts));
 
             // Check and add the evidence to the query parameters.
