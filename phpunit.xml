@@ -7,6 +7,7 @@
       <file>tests/CloudResponse.php</file>
       <file>tests/CloudRequestEngineTests.php</file>
       <file>tests/MissingPropertyHandling.php</file>
+      <file>tests/HttpClientFailureTests.php</file>
     </testsuite>
     <testsuite name="Integration">
       <file>tests/CloudRequestTests.php</file>

@@ -55,6 +55,23 @@ class HttpClient
             ]);
 
             $data = @file_get_contents($url, false, $context);
+
+            if ($data === false) {
+                // The request never reached the service, so there is no
+                // status and no body to read. Without this, false went on
+                // to validateResponse(), where the strict types this file
+                // declares turned it into a type error naming that method,
+                // and $http_response_header was never set either, so the
+                // caller heard nothing about the connection.
+                $error = error_get_last();
+
+                throw new CloudRequestException(sprintf(
+                    Constants::MESSAGE_REQUEST_FAILED,
+                    $url,
+                    $error['message'] ?? 'the reason was not reported'
+                ));
+            }
+
             $statusCode = $this->getHttpCode($http_response_header);
 
             // Validate cloud response for errors.
@@ -79,6 +96,24 @@ class HttpClient
         }
 
         $data = curl_exec($ch);
+
+        if ($data === false) {
+            // curl could not make the request at all, for example where the
+            // name does not resolve, the connection is refused, the
+            // certificate cannot be checked or the request times out. There
+            // is nothing to read, so the reason curl gave is reported.
+            // Without this the false went on to substr() and the caller saw
+            // a type error naming this file instead.
+            $error = curl_error($ch);
+            curl_close($ch);
+
+            throw new CloudRequestException(sprintf(
+                Constants::MESSAGE_REQUEST_FAILED,
+                $url,
+                $error === '' ? 'the reason was not reported' : $error
+            ));
+        }
+
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         // Get headers length
         $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
